@@ -86,7 +86,7 @@ class TaskController extends BaseController
      */
     public function getDatatable($clientPublicId = null, $projectPublicId = null)
     {
-        return $this->taskService->getDatatable($clientPublicId, $projectPublicId, Input::get('sSearch'));
+        return $this->taskService->getDatatable($clientPublicId, $projectPublicId, Input::get('sSearch'), Auth::user()->account->consulting_mode);
     }
 
     /**
@@ -127,6 +127,7 @@ class TaskController extends BaseController
         $data = [
             'task' => null,
             'clientPublicId' => Input::old('client') ? Input::old('client') : ($request->client_id ?: 0),
+            'assocClientPublicId' => Input::old('assoc_client_public_id') ?: ($request->assoc_client_public_id ?: 0),
             'projectPublicId' => Input::old('project_id') ? Input::old('project_id') : ($request->project_id ?: 0),
             'method' => 'POST',
             'url' => 'tasks',
@@ -182,6 +183,7 @@ class TaskController extends BaseController
             'task' => $task,
             'entity' => $task,
             'clientPublicId' => $task->client ? $task->client->public_id : 0,
+            'assocClientPublicId' => $task->assoc_client ? $task->assocclient->public_id : 0,
             'projectPublicId' => $task->project ? $task->project->public_id : 0,
             'method' => 'PUT',
             'url' => 'tasks/'.$task->public_id,
@@ -279,7 +281,17 @@ class TaskController extends BaseController
         } elseif ($action == 'invoice' || $action == 'add_to_invoice') {
             $tasks = Task::scope($ids)->with('account', 'client', 'project')->orderBy('project_id', 'id')->get();
             $clientPublicId = false;
+            $assocClientPublicId = false;
+            $po_number = '';
+            $service_period = '';
+            $candidate_position = '';
             $data = [];
+
+            if (Auth::user()->account->consulting_mode) {
+                $assocClientPublicId = $tasks[0]->project->assoc_client->public_id;
+                $po_number = $tasks[0]->project->name;
+                $candidate_position = $tasks[0]->project->candidate_position;
+            }
 
             $lastProjectId = false;
             foreach ($tasks as $task) {
@@ -305,15 +317,26 @@ class TaskController extends BaseController
                 $showProject = $lastProjectId != $task->project_id;
                 $data[] = [
                     'publicId' => $task->public_id,
-                    'description' => $task->present()->invoiceDescription($account, $showProject),
+                    'productKey' => $account->consulting_mode ? $task->description : '',
+                    'description' => $account->consulting_mode ? '' : $task->present()->invoiceDescription($account, $showProject),
                     'duration' => $task->getHours(),
                     'cost' => $task->getRate(),
                 ];
+
+                if (!empty($task->service_period)) {
+                    $service_period = $task->service_period;
+                }
+
                 $lastProjectId = $task->project_id;
             }
 
             if ($action == 'invoice') {
-                return Redirect::to("invoices/create/{$clientPublicId}")->with('tasks', $data);
+                return Redirect::to("invoices/create/{$clientPublicId}")
+                        ->with('tasks', $data)
+                        ->with('po_number', $po_number)
+                        ->with('assocClientPublicId', $assocClientPublicId)
+                        ->with('custom_value1', $service_period)
+                        ->with('custom_value2', $candidate_position);
             } else {
                 $invoiceId = Input::get('invoice_id');
 

@@ -1072,6 +1072,17 @@ class AccountController extends BaseController
             foreach (Account::$customLabels as $field) {
                 $labels[$field] = Input::get("labels_{$field}");
             }
+
+            if ($account->consulting_mode) {
+                if (empty($labels['service'])) {
+                    $labels['service'] = ' ';
+                }
+
+                if (empty($labels['line_total'])) {
+                    $labels['line_total'] = ' ';
+                }
+            }
+
             $account->invoice_labels = json_encode($labels);
             $account->invoice_fields = Input::get('invoice_fields_json');
 

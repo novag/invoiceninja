@@ -26,6 +26,10 @@ class Task extends EntityModel
         'is_running',
         'custom_value1',
         'custom_value2',
+        // Consulting
+        'assoc_client_id',
+        'service_period',
+        'amount',
     ];
 
     /**
@@ -69,6 +73,14 @@ class Task extends EntityModel
      * @return mixed
      */
     public function client()
+    {
+        return $this->belongsTo('App\Models\Client')->withTrashed();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function assoc_client()
     {
         return $this->belongsTo('App\Models\Client')->withTrashed();
     }
@@ -172,7 +184,9 @@ class Task extends EntityModel
     {
         $value = 0;
 
-        if ($this->project && floatval($this->project->task_rate)) {
+        if ($this->account->consulting_mode) {
+            $value = floatval($this->amount) ? $this->amount : 0;
+        } elseif ($this->project && floatval($this->project->task_rate)) {
             $value = $this->project->task_rate;
         } elseif ($this->client && floatval($this->client->task_rate)) {
             $value = $this->client->task_rate;
@@ -213,7 +227,11 @@ class Task extends EntityModel
      */
     public function getHours()
     {
-        return round($this->getDuration() / (60 * 60), 2);
+        if ($this->account->consulting_mode) {
+            return 1;
+        } else {
+            return round($this->getDuration() / (60 * 60), 2);
+        }
     }
 
     /**

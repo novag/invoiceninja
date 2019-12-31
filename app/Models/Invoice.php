@@ -302,6 +302,14 @@ class Invoice extends EntityModel implements BalanceAffecting
     /**
      * @return mixed
      */
+    public function assoc_client()
+    {
+        return $this->belongsTo('App\Models\Client')->withTrashed();
+    }
+
+    /**
+     * @return mixed
+     */
     public function invoice_items()
     {
         return $this->hasMany('App\Models\InvoiceItem')->orderBy('id');
@@ -958,6 +966,7 @@ class Invoice extends EntityModel implements BalanceAffecting
             'documents',
             'expenses',
             'client',
+            'assoc_client',
             'invitations',
             'tax_name1',
             'tax_rate1',
@@ -1001,6 +1010,29 @@ class Invoice extends EntityModel implements BalanceAffecting
             'custom_value1',
             'custom_value2',
         ]);
+
+        if ($this->assoc_client) {
+            $this->assoc_client->setVisible([
+                'name',
+                'balance',
+                'id_number',
+                'vat_number',
+                'address1',
+                'address2',
+                'city',
+                'state',
+                'postal_code',
+                'work_phone',
+                'payment_terms',
+                'website',
+                'contacts',
+                'country',
+                'currency_id',
+                'country_id',
+                'custom_value1',
+                'custom_value2',
+            ]);
+        }
 
         $this->account->setVisible([
             'name',
@@ -1073,6 +1105,19 @@ class Invoice extends EntityModel implements BalanceAffecting
                 'custom_value1',
                 'custom_value2',
             ]);
+        }
+
+        if ($this->assoc_client) {
+            foreach ($this->assoc_client->contacts as $contact) {
+                $contact->setVisible([
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'phone',
+                    'custom_value1',
+                    'custom_value2',
+                ]);
+            }
         }
 
         foreach ($this->documents as $document) {

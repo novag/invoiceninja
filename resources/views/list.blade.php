@@ -112,7 +112,7 @@
 		  		});
 			});
 		</script>
-	@elseif ($entityType == ENTITY_TASK)
+	@elseif ($entityType == ENTITY_TASK && ! Auth::user()->account->consulting_mode)
 		{!! Button::normal(trans('texts.kanban'))->asLinkTo(url('/tasks/kanban' . (! empty($clientId) ? ('/' . $clientId . (! empty($projectId) ? '/' . $projectId : '')) : '')))->appendIcon(Icon::create('th')) !!}
 		{!! Button::normal(trans('texts.time_tracker'))->asLinkTo('javascript:openTimeTracker()')->appendIcon(Icon::create('time')) !!}
     @endif

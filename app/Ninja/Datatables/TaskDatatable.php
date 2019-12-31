@@ -123,7 +123,7 @@ class TaskDatatable extends EntityDatatable
         ];
     }
 
-    private function getStatusLabel($model)
+    protected function getStatusLabel($model)
     {
         $label = Task::calcStatusLabel($model->is_running, $model->balance, $model->invoice_number, $model->task_status);
         $class = Task::calcStatusClass($model->is_running, $model->balance, $model->invoice_number);

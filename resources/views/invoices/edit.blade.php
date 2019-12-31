@@ -109,7 +109,11 @@
     <div class="panel-body">
 
     <div class="row" style="min-height:195px" onkeypress="formEnterClick(event)">
-    	<div class="col-md-4" id="col_1">
+        @if ($invoice->assoc_client_id)
+        <div class="col-md-3" id="col_1">
+        @else
+        <div class="col-md-4" id="col_1">
+        @endif
 
     		@if ($invoice->id || $data)
 				<div class="form-group">
@@ -190,7 +194,34 @@
 			</div>
 
 		</div>
-		<div class="col-md-4" id="col_2">
+        @if ($invoice->assoc_client_id)
+        <div class="col-md-3" id="col_2">
+
+            <div class="form-group">
+                <label for="client" class="control-label col-lg-4 col-sm-4"><b>{{ trans('texts.assoc_client') }}</b></label>
+                <div class="col-lg-8 col-sm-8">
+                    {!! Former::hidden('assoc_client_public_id')->value($invoice->assoc_client->public_id) !!}
+
+                    <h4>
+                        <span data-bind="text: '{{ $invoice->assoc_client->name }}'"></span>
+                        @if ($invoice->assoc_client->is_deleted)
+                            &nbsp;&nbsp;<div class="label label-danger">{{ trans('texts.deleted') }}</div>
+                        @endif
+                    </h4>
+
+                    @can('view', $invoice->assoc_client)
+                        {!! link_to('/clients/'.$invoice->assoc_client->public_id, trans('texts.view_client'), ['target' => '_blank']) !!}
+                    @endcan
+                </div>
+            </div>
+
+        </div>
+        @endif
+        @if ($invoice->assoc_client_id)
+		<div class="col-md-3" id="col_3">
+        @else
+        <div class="col-md-4" id="col_2">
+        @endif
 			<div data-bind="visible: !is_recurring()">
 				{!! Former::text('invoice_date')->data_bind("datePicker: invoice_date, valueUpdate: 'afterkeydown'")->label($account->getLabel("{$entityType}_date"))
 							->data_date_format(Session::get(SESSION_DATE_PICKER_FORMAT, DEFAULT_DATE_PICKER_FORMAT))->appendIcon('calendar')->addGroupClass('invoice_date') !!}
@@ -238,7 +269,11 @@
             @endif
 		</div>
 
-		<div class="col-md-4" id="col_2">
+        @if ($invoice->assoc_client_id)
+		<div class="col-md-3" id="col_4">
+        @else
+        <div class="col-md-4" id="col_3">
+        @endif
             <span data-bind="visible: !is_recurring()">
             {!! Former::text('invoice_number')
                         ->label(trans("texts.{$entityType}_number_short"))
@@ -271,7 +306,7 @@
                     </div>
                 </div>
             </span>
-			{!! Former::text('po_number')->label($account->getLabel('po_number', 'po_number_short'))->data_bind("value: po_number, valueUpdate: 'afterkeydown'") !!}
+            {!! Former::text('po_number')->label($account->getLabel('po_number', 'po_number_short'))->data_bind("value: po_number, valueUpdate: 'afterkeydown'") !!}
 			{!! Former::text('discount')->data_bind("value: discount, valueUpdate: 'afterkeydown'")
 					->addGroupClass('no-padding-or-border')->type('number')->min('0')->step('any')->append(
 						Former::select('is_amount_discount')
@@ -918,12 +953,25 @@
 		        }
             @endif
 
+            @if (isset($po_number) && !empty($po_number))
+                model.invoice().po_number('{!! $po_number !!}');
+            @endif
+
+            @if (isset($custom_value1) && !empty($custom_value1))
+                model.invoice().custom_text_value1('{!! $custom_value1 !!}');
+            @endif
+
+            @if (isset($custom_value2) && !empty($custom_value2))
+                model.invoice().custom_text_value2('{!! $custom_value2 !!}');
+            @endif
+
             @if (isset($tasks) && count($tasks))
                 NINJA.formIsChanged = true;
                 var tasks = {!! json_encode($tasks) !!};
                 for (var i=0; i<tasks.length; i++) {
                     var task = tasks[i];
                     var item = model.invoice().addItem(true);
+                    item.product_key(task.productKey);
                     item.notes(task.description);
                     item.qty(task.duration);
 					item.cost(task.cost);

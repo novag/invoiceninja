@@ -59,17 +59,32 @@
 	<div class="row">
         <div class="col-md-3">
 			<h3>{{ trans('texts.details') }}</h3>
+            @if ($account->consulting_mode)
+            <h4>
+                {!! $project->assoc_client->present()->link !!}<br/>
+            </h4>
+                @if ($project->annual_target_salary)
+                    {{ trans('texts.annual_target_salary') . ': ' . Utils::formatMoney($project->annual_target_salary) }}<br/>
+                @endif
+                @if ($project->fee_rate)
+                    {{ trans('texts.fee_rate') . ': ' . $project->fee_rate . ' %' }}<br/>
+                @endif
+                @if ($project->expense_rate)
+                    {{ trans('texts.expense_rate') . ': ' . $project->expense_rate . ' %' }}<br/>
+                @endif
+            @else
             <h4>
                 {!! $project->client->present()->link !!}<br/>
             </h4>
-            @if ($project->due_date)
-                {{ trans('texts.due_date') . ': ' . Utils::fromSqlDate($project->due_date) }}<br/>
-            @endif
-            @if ($project->budgeted_hours)
-                {{ trans('texts.budgeted_hours') . ': ' . $project->budgeted_hours }}<br/>
-            @endif
-            @if ($project->present()->defaultTaskRate)
-                {{ trans('texts.task_rate') . ': ' . $project->present()->defaultTaskRate }}<br/>
+                @if ($project->due_date)
+                    {{ trans('texts.due_date') . ': ' . Utils::fromSqlDate($project->due_date) }}<br/>
+                @endif
+                @if ($project->budgeted_hours)
+                    {{ trans('texts.budgeted_hours') . ': ' . $project->budgeted_hours }}<br/>
+                @endif
+                @if ($project->present()->defaultTaskRate)
+                    {{ trans('texts.task_rate') . ': ' . $project->present()->defaultTaskRate }}<br/>
+                @endif
             @endif
 
             @if ($account->customLabel('project1') && $project->custom_value1)
@@ -89,6 +104,20 @@
         <div class="col-md-4">
             <h3>{{ trans('texts.summary') }}
 			<table class="table" style="width:100%">
+                @if ($account->consulting_mode)
+                <tr>
+                    <td><small>{{ trans('texts.candidate_position') }}</small></td>
+                    <td style="text-align: right">{{ $project->candidate_position }}</td>
+                </tr>
+                <tr>
+                    <td><small>{{ trans('texts.candidate_name') }}</small></td>
+                    <td style="text-align: right">{{ $project->candidate_name }}</td>
+                </tr>
+                <tr>
+                    <td><small>{{ trans('texts.warranty_period_until') }}</small></td>
+                    <td style="text-align: right">{{ Utils::fromSqlDate($project->warranty_period_until) }}</td>
+                </tr>
+                @else
 				<tr>
 					<td><small>{{ trans('texts.tasks') }}</small></td>
 					<td style="text-align: right">{{ $chartData->count }}</td>
@@ -102,6 +131,7 @@
                         @endif
                     </td>
 				</tr>
+                @endif
 			</table>
 			</h3>
 
@@ -116,18 +146,28 @@
     @endif
 
     <ul class="nav nav-tabs nav-justified">
-		{!! Form::tab_link('#tasks', trans('texts.tasks')) !!}
+		{!! Form::tab_link('#tasks', trans($account->consulting_mode ? 'texts.positions' : 'texts.tasks')) !!}
 	</ul><br/>
 
 	<div class="tab-content">
         <div class="tab-pane" id="tasks">
-            @include('list', [
-                'entityType' => ENTITY_TASK,
-                'datatable' => new \App\Ninja\Datatables\ProjectTaskDatatable(true, true),
-                'projectId' => $project->public_id,
-                'clientId' => $project->client->public_id,
-                'url' => url('api/tasks/' . $project->client->public_id . '/' . $project->public_id),
-            ])
+            @if ($account->consulting_mode)
+                @include('list', [
+                    'entityType' => ENTITY_TASK,
+                    'datatable' => new \App\Ninja\Datatables\ProjectPositionDatatable(true, true),
+                    'projectId' => $project->public_id,
+                    'clientId' => $project->client->public_id,
+                    'url' => url('api/tasks/' . $project->client->public_id . '/' . $project->public_id),
+                ])
+            @else
+                @include('list', [
+                    'entityType' => ENTITY_TASK,
+                    'datatable' => new \App\Ninja\Datatables\ProjectTaskDatatable(true, true),
+                    'projectId' => $project->public_id,
+                    'clientId' => $project->client->public_id,
+                    'url' => url('api/tasks/' . $project->client->public_id . '/' . $project->public_id),
+                ])
+            @endif
         </div>
     </div>
 

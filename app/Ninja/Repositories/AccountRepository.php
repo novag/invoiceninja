@@ -794,6 +794,39 @@ class AccountRepository
 
     public function save($data, $account)
     {
+        if (isset($data['consulting_mode']) && $account->consulting_mode != $data['consulting_mode']) {
+            $labels = json_decode($account->invoice_labels, true);
+            $fields = json_decode($account->invoice_fields, true);
+            $hidden_fields = array('product.description', 'product.rate', 'product.hours');
+            $task_fields = array('product.service', 'product.description', 'product.custom_value1', 'product.custom_value2', 'product.rate', 'product.hours', 'product.tax', 'product.line_total');
+
+            if ($data['consulting_mode']) {
+                $labels['po_number'] = 'Projektnummer';
+                $labels['service'] = ' ';
+                $labels['line_total'] = ' ';
+
+                if (!isset($fields['task_fields'])) {
+                    $fields['task_fields'] = $task_fields;
+                }
+
+                foreach ($hidden_fields as $field) {
+                    if (($key = array_search($field, $fields['task_fields'])) !== false) {
+                        unset($fields['task_fields'][$key]);
+                    }
+                }
+
+                $fields['task_fields'] = array_values($fields['task_fields']);
+            } else {
+                $labels['po_number'] = '';
+                $labels['service'] = '';
+                $labels['line_total'] = '';
+
+                $fields['task_fields'] = $task_fields;
+            }
+            $account->invoice_labels = json_encode($labels);
+            $account->invoice_fields = json_encode($fields);
+        }
+
         $account->fill($data);
         $account->save();
     }

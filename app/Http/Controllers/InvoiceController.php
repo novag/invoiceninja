@@ -205,12 +205,17 @@ class InvoiceController extends BaseController
 
         $entityType = $isRecurring ? ENTITY_RECURRING_INVOICE : ENTITY_INVOICE;
         $clientId = null;
+        $assocClientId = Session::get('assocClientPublicId') ?: false;
 
         if ($request->client_id) {
             $clientId = Client::getPrivateId($request->client_id);
         }
 
-        $invoice = $account->createInvoice($entityType, $clientId);
+        if ($assocClientId) {
+            $assocClientId = Client::getPrivateId($assocClientId);
+        }
+
+        $invoice = $account->createInvoice($entityType, $clientId, $assocClientId);
         $invoice->public_id = 0;
         $invoice->loadFromRequest();
 
@@ -330,6 +335,9 @@ class InvoiceController extends BaseController
             'recurringDueDateHelp' => $recurringDueDateHelp,
             'invoiceLabels' => Auth::user()->account->getInvoiceLabels(),
             'tasks' => Session::get('tasks') ? Session::get('tasks') : null,
+            'po_number' => Session::get('po_number') ?: null,
+            'custom_value1' => Session::get('custom_value1') ?: null,
+            'custom_value2' => Session::get('custom_value2') ?: null,
             'expenseCurrencyId' => Session::get('expenseCurrencyId') ?: null,
             'expenses' => Expense::scope(Session::get('expenses'))->with('documents', 'expense_category')->get(),
         ];

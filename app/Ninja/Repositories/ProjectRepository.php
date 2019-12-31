@@ -24,9 +24,11 @@ class ProjectRepository extends BaseRepository
         $query = DB::table('projects')
                 ->where('projects.account_id', '=', Auth::user()->account_id)
                 ->leftjoin('clients', 'clients.id', '=', 'projects.client_id')
+                ->leftjoin('clients AS assoc_clients', 'assoc_clients.id', '=', 'projects.assoc_client_id')
                 ->leftJoin('contacts', 'contacts.client_id', '=', 'clients.id')
                 ->where('contacts.deleted_at', '=', null)
                 ->where('clients.deleted_at', '=', null)
+                ->where('assoc_clients.deleted_at', '=', null)
                 ->where(function ($query) { // handle when client isn't set
                     $query->where('contacts.is_primary', '=', true)
                           ->orWhere('contacts.is_primary', '=', null);
@@ -41,9 +43,20 @@ class ProjectRepository extends BaseRepository
                     'projects.due_date',
                     'projects.budgeted_hours',
                     'projects.private_notes',
+                    'projects.candidate_position',
+                    'projects.annual_target_salary',
+                    'projects.fee_rate',
+                    'projects.expense_rate',
+                    'projects.candidate_name',
+                    'projects.signed_at',
+                    'projects.start_of_work',
+                    'projects.warranty_period_until',
                     DB::raw("COALESCE(NULLIF(clients.name,''), NULLIF(CONCAT(contacts.first_name, ' ', contacts.last_name),''), NULLIF(contacts.email,'')) client_name"),
                     'clients.user_id as client_user_id',
-                    'clients.public_id as client_public_id'
+                    'clients.public_id as client_public_id',
+                    'assoc_clients.name AS assoc_client_name',
+                    'assoc_clients.user_id AS assoc_client_user_id',
+                    'assoc_clients.public_id AS assoc_client_public_id'
                 );
 
         $this->applyFilters($query, ENTITY_PROJECT);
@@ -72,12 +85,30 @@ class ProjectRepository extends BaseRepository
         if (! $project) {
             $project = Project::createNew();
             $project['client_id'] = $input['client_id'];
+
+            if (Auth::user()->account->consulting_mode) {
+                $project['assoc_client_id'] = $input['assoc_client_id'];
+            }
         }
 
         $project->fill($input);
 
         if (isset($input['due_date'])) {
             $project->due_date = Utils::toSqlDate($input['due_date']);
+        }
+
+        if (Auth::user()->account->consulting_mode) {
+            if (isset($input['signed_at'])) {
+                $project->signed_at = Utils::toSqlDate($input['signed_at']);
+            }
+
+            if (isset($input['start_of_work'])) {
+                $project->start_of_work = Utils::toSqlDate($input['start_of_work']);
+            }
+
+            if (isset($input['warranty_period_until'])) {
+                $project->warranty_period_until = Utils::toSqlDate($input['warranty_period_until']);
+            }
         }
 
         $project->save();

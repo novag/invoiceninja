@@ -3903,6 +3903,21 @@ Sobald Sie die Beträge erhalten haben, kommen Sie bitte wieder zurück zu diese
     'recent_tasks' => 'Recent Tasks',
     'recent_expenses' => 'Recent Expenses',
     'upcoming_expenses' => 'Upcoming Expenses',
+    'consulting_mode' => 'Beratungsmodus',
+    'assoc_client' => 'Mandant',
+    'assoc_client_name' => 'Mandant',
+    'project_id' => 'Projektnummer',
+    'candidate_position' => 'Position',
+    'annual_target_salary' => 'Jahreszielgehalt',
+    'fee_rate' => 'Honorarsatz',
+    'expense_rate' => 'Projektkostensatz',
+    'warranty_details' => 'Gewährleistungsdaten',
+    'candidate_name' => 'Kandidat',
+    'signed_at' => 'Vertragsunterschrift am',
+    'start_of_work' => 'Arbeitsbeginn am',
+    'warranty_period_until' => 'Garantielaufzeit bis',
+    'positions' => 'Positionen',
+    'service_period' => 'Leistungszeitraum',
 );
 
 return $LANG;

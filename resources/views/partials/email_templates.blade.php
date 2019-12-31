@@ -107,6 +107,7 @@
                                 'client',
                                 'contact',
                                 'firstName',
+                                'lastName',
                                 'password',
                                 'autoBill',
                             ] as $field)
@@ -124,6 +125,7 @@
                                 'invoiceDate',
                                 'dueDate',
                                 'poNumber',
+                                'firstTaskDescription',
                                 'terms',
                                 'notes',
                                 'documents',

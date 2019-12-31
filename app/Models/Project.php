@@ -30,6 +30,15 @@ class Project extends EntityModel
         'budgeted_hours',
         'custom_value1',
         'custom_value2',
+        // Consulting
+        'candidate_position',
+        'annual_target_salary',
+        'fee_rate',
+        'expense_rate',
+        'candidate_name',
+        'signed_at',
+        'start_of_work',
+        'warranty_period_until',
     ];
 
     /**
@@ -65,6 +74,14 @@ class Project extends EntityModel
      * @return mixed
      */
     public function client()
+    {
+        return $this->belongsTo('App\Models\Client')->withTrashed();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function assoc_client()
     {
         return $this->belongsTo('App\Models\Client')->withTrashed();
     }

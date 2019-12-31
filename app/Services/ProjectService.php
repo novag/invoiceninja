@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Client;
+use App\Ninja\Datatables\ConsultingProjectDatatable;
 use App\Ninja\Datatables\ProjectDatatable;
 use App\Ninja\Repositories\ProjectRepository;
+
+use Auth;
 
 /**
  * Class ProjectService.
@@ -53,6 +56,10 @@ class ProjectService extends BaseService
             $data['client_id'] = Client::getPrivateId($data['client_id']);
         }
 
+        if (isset($data['assoc_client_id']) && $data['assoc_client_id']) {
+            $data['assoc_client_id'] = Client::getPrivateId($data['assoc_client_id']);
+        }
+
         return $this->projectRepo->save($data, $project);
     }
 
@@ -66,7 +73,7 @@ class ProjectService extends BaseService
     public function getDatatable($search, $userId)
     {
         // we don't support bulk edit and hide the client on the individual client page
-        $datatable = new ProjectDatatable();
+        $datatable = Auth::user()->account->consulting_mode ? new ConsultingProjectDatatable() : new ProjectDatatable();
 
         $query = $this->projectRepo->find($search, $userId);
 

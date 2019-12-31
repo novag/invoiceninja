@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Ninja\Datatables\ProjectPositionDatatable;
 use App\Ninja\Datatables\ProjectTaskDatatable;
 use App\Ninja\Datatables\TaskDatatable;
 use App\Ninja\Repositories\TaskRepository;
@@ -42,9 +43,11 @@ class TaskService extends BaseService
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getDatatable($clientPublicId, $projectPublicId, $search)
+    public function getDatatable($clientPublicId, $projectPublicId, $search, $consultingMode)
     {
-        if ($projectPublicId) {
+        if ($consultingMode) {
+            $datatable = new ProjectPositionDatatable(true, true);
+        } elseif ($projectPublicId) {
             $datatable = new ProjectTaskDatatable(true, true);
         } else {
             $datatable = new TaskDatatable(true, $clientPublicId);

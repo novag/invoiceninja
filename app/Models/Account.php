@@ -176,6 +176,8 @@ class Account extends Eloquent
         'custom_value1',
         'custom_value2',
         'custom_messages',
+        // Consulting
+        'consulting_mode',
     ];
 
     /**
@@ -1073,7 +1075,7 @@ class Account extends Eloquent
      *
      * @return mixed
      */
-    public function createInvoice($entityType = ENTITY_INVOICE, $clientId = null)
+    public function createInvoice($entityType = ENTITY_INVOICE, $clientId = null, $assocClientId = null)
     {
         $invoice = Invoice::createNew();
 
@@ -1083,6 +1085,7 @@ class Account extends Eloquent
         $invoice->start_date = Utils::today();
         $invoice->invoice_design_id = $this->invoice_design_id;
         $invoice->client_id = $clientId;
+        $invoice->assoc_client_id = $assocClientId;
         $invoice->custom_taxes1 = $this->custom_invoice_taxes1;
         $invoice->custom_taxes2 = $this->custom_invoice_taxes2;
 

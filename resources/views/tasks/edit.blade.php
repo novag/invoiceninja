@@ -52,6 +52,13 @@
                 {!! Former::plaintext()
                         ->label('client')
                         ->value($task->client->present()->link) !!}
+
+                @if ($account->consulting_mode && $task->assoc_client)
+                    {!! Former::plaintext()
+                            ->label('assoc_client')
+                            ->value($task->assoc_client->present()->link) !!}
+                @endif
+
                 @if ($task->project)
                     {!! Former::plaintext()
                             ->label('project')
@@ -59,6 +66,11 @@
                 @endif
             @else
                 {!! Former::select('client')->addOption('', '')->addGroupClass('client-select') !!}
+
+                @if ($account->consulting_mode)
+                    {!! Former::hidden('assoc_client_public_id')->value('{{ $assocClientPublicId }}') !!}
+                @endif
+
                 {!! Former::select('project_id')
                         ->addOption('', '')
                         ->addGroupClass('project-select')
@@ -67,46 +79,53 @@
 
             @include('partials/custom_fields', ['entityType' => ENTITY_TASK])
 
-            {!! Former::textarea('description')->rows(4) !!}
+            @if ($account->consulting_mode)
+                {!! Former::text('amount') !!}
 
-            @if ($task)
+                {!! Former::text('description') !!}
 
-                <div class="form-group simple-time" id="editDetailsLink">
-                    <label for="simple-time" class="control-label col-lg-4 col-sm-4">
-                    </label>
-                    <div class="col-lg-8 col-sm-8" style="padding-top: 10px">
-                        @if ($task->getStartTime())
-                            <p>{{ $task->getStartTime() }} -
-                            @if (Auth::user()->account->timezone_id)
-                                {{ $timezone }}
-                            @else
-                                {!! link_to('/settings/localization?focus=timezone_id', $timezone, ['target' => '_blank']) !!}
-                            @endif
-                            <p/>
-                        @endif
-
-                        @if ($task->hasPreviousDuration())
-                            {{ trans('texts.duration') . ': ' . Utils::formatTime($task->getDuration()) }}<br/>
-                        @endif
-
-                        @if (!$task->is_running)
-                            <p>{!! Button::primary(trans('texts.edit_times'))->withAttributes(['onclick'=>'showTimeDetails()'])->small() !!}</p>
-                        @endif
-                    </div>
-                </div>
-
-                @if ($task->is_running)
-                    <center>
-                        <div id="duration-text" style="font-size: 36px; font-weight: 300; padding: 30px 0 20px 0"/>
-                    </center>
-                @endif
-
+                {!! Former::text('service_period') !!}
             @else
-                {!! Former::radios('task_type')->radios([
-                        trans('texts.timer') => array('name' => 'task_type', 'value' => 'timer'),
-                        trans('texts.manual') => array('name' => 'task_type', 'value' => 'manual'),
-                ])->inline()->check('timer')->label('&nbsp;') !!}
-            @endif
+                {!! Former::textarea('description')->rows(4) !!}
+
+                @if ($task)
+
+                    <div class="form-group simple-time" id="editDetailsLink">
+                        <label for="simple-time" class="control-label col-lg-4 col-sm-4">
+                        </label>
+                        <div class="col-lg-8 col-sm-8" style="padding-top: 10px">
+                            @if ($task->getStartTime())
+                                <p>{{ $task->getStartTime() }} -
+                                @if (Auth::user()->account->timezone_id)
+                                    {{ $timezone }}
+                                @else
+                                    {!! link_to('/settings/localization?focus=timezone_id', $timezone, ['target' => '_blank']) !!}
+                                @endif
+                                <p/>
+                            @endif
+
+                            @if ($task->hasPreviousDuration())
+                                {{ trans('texts.duration') . ': ' . Utils::formatTime($task->getDuration()) }}<br/>
+                            @endif
+
+                            @if (!$task->is_running)
+                                <p>{!! Button::primary(trans('texts.edit_times'))->withAttributes(['onclick'=>'showTimeDetails()'])->small() !!}</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if ($task->is_running)
+                        <center>
+                            <div id="duration-text" style="font-size: 36px; font-weight: 300; padding: 30px 0 20px 0"/>
+                        </center>
+                    @endif
+
+                @else
+                    {!! Former::radios('task_type')->radios([
+                            trans('texts.timer') => array('name' => 'task_type', 'value' => 'timer'),
+                            trans('texts.manual') => array('name' => 'task_type', 'value' => 'manual'),
+                    ])->inline()->check('timer')->label('&nbsp;') !!}
+                @endif
 
             <div class="form-group simple-time" id="datetime-details" style="display: none">
                 <label for="simple-time" class="control-label col-lg-4 col-sm-4">
@@ -141,6 +160,7 @@
                 </table>
                 </div>
             </div>
+            @endif
 
             </div>
             </div>
@@ -164,10 +184,16 @@
                 {!! Button::success(trans('texts.save'))->large()->appendIcon(Icon::create('floppy-disk'))->withAttributes(['id' => 'save-button']) !!}
                 {!! Button::primary(trans('texts.restore'))->large()->withAttributes(['onclick' => 'submitAction("restore")'])->appendIcon(Icon::create('cloud-download')) !!}
             @else
-                {!! Button::normal(trans('texts.cancel'))->large()->asLinkTo(HTMLUtils::previousUrl('/tasks'))->appendIcon(Icon::create('remove-circle')) !!}
+                @if ($account->consulting_mode)
+                    {!! Button::normal(trans('texts.cancel'))->large()->asLinkTo(HTMLUtils::previousUrl('/projects/' . $projectPublicId))->appendIcon(Icon::create('remove-circle')) !!}
+                @else
+                    {!! Button::normal(trans('texts.cancel'))->large()->asLinkTo(HTMLUtils::previousUrl('/tasks'))->appendIcon(Icon::create('remove-circle')) !!}
+                @endif
                 @if ($task)
                     {!! Button::success(trans('texts.save'))->large()->appendIcon(Icon::create('floppy-disk'))->withAttributes(['id' => 'save-button']) !!}
-                    {!! Button::primary(trans('texts.resume'))->large()->appendIcon(Icon::create('play'))->withAttributes(['id' => 'resume-button']) !!}
+                    @if (! $account->consulting_mode)
+                        {!! Button::primary(trans('texts.resume'))->large()->appendIcon(Icon::create('play'))->withAttributes(['id' => 'resume-button']) !!}
+                    @endif
                     {!! DropdownButton::normal(trans('texts.more_actions'))
                           ->withContents($actions)
                           ->large()
@@ -550,6 +576,7 @@
 
         // setup clients and project comboboxes
         var clientId = {{ $clientPublicId }};
+        var assocClientId = {{ $assocClientPublicId }};
         var projectId = {{ $projectPublicId }};
 
         var clientMap = {};
@@ -557,6 +584,7 @@
         var projectsForClientMap = {};
         var projectsForAllClients = [];
         var $clientSelect = $('select#client');
+        var $assocClientHidden = $('hidden#assoc_client_public_id');
 
         for (var i=0; i<projects.length; i++) {
           var project = projects[i];
@@ -622,18 +650,30 @@
             var projectId = $('input[name=project_id]').val();
             if (projectId == '-1') {
                 $('input[name=project_name]').val(projectName);
+                assocClientHidden.val('');
             } else if (projectId) {
                 // when selecting a project make sure the client is loaded
                 var project = projectMap[projectId];
-                if (project && project.client) {
-                    var client = clientMap[project.client.public_id];
-                    if (client) {
-                        project.client = client;
-                        setComboboxValue($('.client-select'), client.public_id, getClientDisplayName(client));
+                if (project) {
+                    if (project.client) {
+                        var client = clientMap[project.client.public_id];
+                        if (client) {
+                            project.client = client;
+                            setComboboxValue($('.client-select'), client.public_id, getClientDisplayName(client));
+                        }
+                    }
+
+                    if (project.assoc_client) {
+                        var assoc_client = clientMap[project.assoc_client.public_id];
+                        if (assoc_client) {
+                            project.assoc_client = assoc_client
+                            assocClientHidden.val(assoc_client.public_id);
+                        }
                     }
                 }
             } else {
                 $clientSelect.trigger('change');
+                assocClientHidden.val('');
             }
         });
 

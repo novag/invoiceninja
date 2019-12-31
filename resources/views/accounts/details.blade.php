@@ -20,6 +20,7 @@
 
 	{{ Former::populate($account) }}
 	{{ Former::populateField('task_rate', floatval($account->task_rate) ? Utils::roundSignificant($account->task_rate) : '') }}
+    {{ Former::populateField('consulting_mode', intval($account->consulting_mode)) }}
 
     @include('accounts.nav', ['selected' => ACCOUNT_COMPANY_DETAILS])
 
@@ -64,6 +65,10 @@
                         ->addOption('','')
                         ->fromQuery($industries, 'name', 'id')
                         ->help('texts.industry_help') !!}
+
+                {!! Former::checkbox('consulting_mode')
+                        ->text(trans('texts.enable'))
+                        ->value(1) !!}
 
             </div>
         </div>

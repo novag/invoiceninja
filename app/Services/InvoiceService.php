@@ -99,6 +99,20 @@ class InvoiceService extends BaseService
             }
         }
 
+        if (isset($data['assoc_client_public_id'])) {
+            $canSaveClient = false;
+            $canViewClient = false;
+            $clientPublicId = $data['assoc_client_public_id'];
+            if (!empty($clientPublicId) && intval($clientPublicId) >= 0) {
+                $client = Client::scope($clientPublicId)->first();
+                $canSaveClient = Auth::user()->can('edit', $client);
+                $canViewClient = Auth::user()->can('view', $client);
+            }
+            if ($canSaveClient || $canViewClient) {
+                $data['assoc_client_id'] = $client->id;
+            }
+        }
+
         return $this->invoiceRepo->save($data, $invoice);
     }
 

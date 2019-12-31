@@ -284,6 +284,7 @@ class AccountTransformer extends EntityTransformer
             'custom_invoice_text_label2' => $account->customLabel('invoice_text2'),
             'custom_invoice_item_label1' => $account->customLabel('product1'),
             'custom_invoice_item_label2' => $account->customLabel('product2'),
+            'consulting_mode' => (bool) $account->consulting_mode,
         ];
     }
 }

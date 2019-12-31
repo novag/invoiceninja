@@ -419,7 +419,7 @@
                 'expenses',
                 'vendors',
             ] as $option)
-                @if(!Auth::user()->account->isModuleEnabled(substr($option, 0, -1)))
+                @if(!Auth::user()->account->isModuleEnabled(substr($option, 0, -1)) || ($option == 'tasks' && Auth::user()->account->consulting_mode))
                     {{ '' }}
                 @else
                     @include('partials.navigation_option')

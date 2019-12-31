@@ -8,8 +8,10 @@ use App\Http\Requests\ProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Client;
 use App\Models\Project;
+use App\Ninja\Datatables\ConsultingProjectDatatable;
 use App\Ninja\Datatables\ProjectDatatable;
 use App\Ninja\Repositories\ProjectRepository;
+use App\Ninja\Repositories\TaskRepository;
 use App\Services\ProjectService;
 use Auth;
 use Input;
@@ -19,12 +21,14 @@ use View;
 class ProjectController extends BaseController
 {
     protected $projectRepo;
+    protected $taskRepo;
     protected $projectService;
     protected $entityType = ENTITY_PROJECT;
 
-    public function __construct(ProjectRepository $projectRepo, ProjectService $projectService)
+    public function __construct(ProjectRepository $projectRepo, ProjectService $projectService, TaskRepository $taskRepo)
     {
         $this->projectRepo = $projectRepo;
+        $this->taskRepo = $taskRepo;
         $this->projectService = $projectService;
     }
 
@@ -37,7 +41,7 @@ class ProjectController extends BaseController
     {
         return View::make('list_wrapper', [
             'entityType' => ENTITY_PROJECT,
-            'datatable' => new ProjectDatatable(),
+            'datatable' => Auth::user()->account->consulting_mode ? new ConsultingProjectDatatable() : new ProjectDatatable(),
             'title' => trans('texts.projects'),
         ]);
     }
@@ -79,6 +83,10 @@ class ProjectController extends BaseController
             'clientPublicId' => $request->client_id,
         ];
 
+        if (Auth::user()->account->consulting_mode) {
+            $data['assocClientPublicId'] = $request->assoc_client_id;
+        }
+
         return View::make('projects.edit', $data);
     }
 
@@ -96,6 +104,10 @@ class ProjectController extends BaseController
             'clientPublicId' => $project->client ? $project->client->public_id : null,
         ];
 
+        if (Auth::user()->account->consulting_mode) {
+            $data['assocClientPublicId'] = $request->assoc_client_id;
+        }
+
         return View::make('projects.edit', $data);
     }
 
@@ -104,6 +116,35 @@ class ProjectController extends BaseController
         $project = $this->projectService->save($request->input());
 
         Session::flash('message', trans('texts.created_project'));
+
+        if (Auth::user()->account->consulting_mode) {
+            if ($project->annual_target_salary && $project->fee_rate) {
+                $fee = $project->annual_target_salary * $project->fee_rate * 0.01;
+                $rate = $fee / 3 * 0.75;
+
+                if ($project->expense_rate) {
+                    $expense = $fee * $project->expense_rate * 0.01;
+
+                    $data = [
+                        'project_id' => $project->public_id,
+                        'description' => 'Projektkosten',
+                        'amount' => $expense,
+                    ];
+
+                    $this->taskRepo->save(null, $data);
+                }
+
+                for ($i = 1; $i < 4; $i++) {
+                    $data = [
+                        'project_id' => $project->public_id,
+                        'description' =>  $i . '. Rate',
+                        'amount' => $rate,
+                    ];
+
+                    $this->taskRepo->save(null, $data);
+                }
+            }
+        }
 
         return redirect()->to($project->getRoute());
     }

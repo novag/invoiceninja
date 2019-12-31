@@ -877,6 +877,7 @@ $LANG = array(
     'plain' => 'Plain',
     'light' => 'Light',
     'dark' => 'Dark',
+    'consulting_mode_help' => 'Consulting mode',
     'industry_help' => 'Used to provide comparisons against the averages of companies of similar size and industry.',
     'subdomain_help' => 'Set the subdomain or display the invoice on your own website.',
     'website_help' => 'Display the invoice in an iFrame on your own website. Note: if a value is set the iFrame must be configured otherwise the invoice link will not work.',

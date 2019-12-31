@@ -42,6 +42,8 @@ class TaskRepository extends BaseRepository
                         'contacts.last_name',
                         'invoices.invoice_status_id',
                         'tasks.description',
+                        'tasks.service_period',
+                        'tasks.amount',
                         'tasks.is_deleted',
                         'tasks.deleted_at',
                         'invoices.invoice_number',

@@ -385,7 +385,8 @@ class InvoiceRepository extends BaseRepository
             } elseif (isset($data['is_quote']) && filter_var($data['is_quote'], FILTER_VALIDATE_BOOLEAN)) {
                 $entityType = ENTITY_QUOTE;
             }
-            $invoice = $account->createInvoice($entityType, $data['client_id']);
+            $assoc_client_id = isset($data['assoc_client_id']) ? $data['assoc_client_id'] : null;
+            $invoice = $account->createInvoice($entityType, $data['client_id'], $assoc_client_id);
             $invoice->invoice_date = date_create()->format('Y-m-d');
             $invoice->custom_taxes1 = $account->custom_invoice_taxes1 ?: false;
             $invoice->custom_taxes2 = $account->custom_invoice_taxes2 ?: false;
@@ -893,6 +894,7 @@ class InvoiceRepository extends BaseRepository
 
         foreach ([
           'client_id',
+          'assoc_client_id',
           'discount',
           'is_amount_discount',
           'po_number',
