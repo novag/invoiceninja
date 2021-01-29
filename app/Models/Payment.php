@@ -10,6 +10,7 @@ use App\Events\PaymentWasVoided;
 use Event;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laracasts\Presenter\PresentableTrait;
+use Utils;
 
 /**
  * Class Payment.
@@ -299,6 +300,16 @@ class Payment extends EntityModel
     public function getCompletedAmount()
     {
         return $this->amount - $this->refunded;
+    }
+
+    public function getCompletedNetAmount()
+    {
+        return round($this->getCompletedAmount() * 100 / ($this->invoice->tax_rate1 + $this->invoice->tax_rate2 + 100), 2);
+    }
+
+    public function taxAmount()
+    {
+        return Utils::calculateTaxes($this->getCompletedNetAmount(), $this->invoice->tax_rate1, $this->invoice->tax_rate2);
     }
 
     public function canBeRefunded()

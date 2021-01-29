@@ -3918,6 +3918,8 @@ Sobald Sie die Beträge erhalten haben, kommen Sie bitte wieder zurück zu diese
     'warranty_period_until' => 'Garantielaufzeit bis',
     'positions' => 'Positionen',
     'service_period' => 'Leistungszeitraum',
+    'vat' => 'Umsatzsteuer',
+    'inputtax' => 'Vorsteuer',
 );
 
 return $LANG;

@@ -275,7 +275,7 @@
         <table class="tablesorter tablesorter-totals" style="display:none">
         <thead>
             <tr>
-                <th>{{ trans("texts.totals") }}</th>
+                <th></th>
 				@foreach (array_values(array_values($reportTotals)[0])[0] as $key => $val)
                     <th>{{ trans("texts.{$key}") }}</th>
                 @endforeach
@@ -285,10 +285,12 @@
             @foreach ($reportTotals as $currencyId => $each)
 				@foreach ($each as $dimension => $val)
 	                <tr>
-	                    <td>{!! Utils::getFromCache($currencyId, 'currencies')->name !!}
-						@if ($dimension)
-							- {{ $dimension }}
-						@endif
+						<td>
+							@if ($dimension)
+								{{ $dimension }}
+							@else
+								{!! Utils::getFromCache($currencyId, 'currencies')->name !!}
+							@endif
 						</td>
 	                    @foreach ($val as $field => $value)
 							<td>
@@ -301,6 +303,18 @@
 	                    @endforeach
 	                </tr>
 				@endforeach
+				<tr>
+					<td><b>{{ trans("texts.totals") }}</b></td>
+					@foreach (array_values($each)[0] as $key => $val)
+						<td><b>
+							@if ($field == 'duration')
+								{{ Utils::formatTime(array_sum(array_column($each, $key))) }}
+							@else
+								{{ Utils::formatMoney(array_sum(array_column($each, $key)), $currencyId) }}
+							@endif
+						</b></td>
+					@endforeach
+				</tr>
             @endforeach
         </tbody>
         </table>
@@ -678,9 +692,11 @@
   			$(".tablesorter-data").tablesorter({
 				@if (! request()->group)
 					sortList: [[0,0]],
+				@else
+					sortList: [[0,0]],
 				@endif
 				theme: 'bootstrap',
-				widgets: ['zebra', 'uitheme', 'filter'{!! request()->group ? ", 'group'" : "" !!}, 'columnSelector'],
+				widgets: ['zebra', 'uitheme', 'filter'/*{!! request()->group ? ", 'group'" : "" !!}*/, 'columnSelector'],
 				headerTemplate : '{content} {icon}',
 				@if ($report)
 					dateFormat: '{{ $report->convertDateFormat() }}',
@@ -728,7 +744,11 @@
 
 			$(".tablesorter-totals").tablesorter({
 				theme: 'bootstrap',
+				sortList: [[0,0]],
 				widgets: ['zebra', 'uitheme'],
+				headers: {
+					0: { sorter:'text'},
+				},
 			}).show();
 
 			if (isStorageSupported()) {
