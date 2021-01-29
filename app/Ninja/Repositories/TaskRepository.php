@@ -178,6 +178,9 @@ class TaskRepository extends BaseRepository
         if (isset($data['description'])) {
             $task->description = trim($data['description']);
         }
+        if (isset($data['amount'])) {
+            $task->amount = Utils::parseFloat($data['amount']);
+        }
         if (isset($data['task_status_id'])) {
             $task->task_status_id = $data['task_status_id'] ? TaskStatus::getPrivateId($data['task_status_id']) : null;
         }

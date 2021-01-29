@@ -15,7 +15,7 @@
         {!! Former::populate($project) !!}
 
         @if ($account->consulting_mode)
-            {!! Former::populateField('annual_target_salary', intval($project->annual_target_salary) ? $project->annual_target_salary : '') !!}
+            {!! Former::populateField('annual_target_salary', intval($project->annual_target_salary) ? Utils::formatNumber($project->annual_target_salary) : '') !!}
             {!! Former::populateField('fee_rate', intval($project->fee_rate) ? $project->fee_rate : '') !!}
             {!! Former::populateField('expense_rate', intval($project->expense_rate) ? $project->expense_rate : '') !!}
         @else
@@ -68,11 +68,11 @@
 
                     {!! Former::text('candidate_position') !!}
 
-                    {!! Former::text('annual_target_salary') !!}
+                    {!! Former::text('annual_target_salary')->append('<span>EUR</span>') !!}
 
-                    {!! Former::text('fee_rate') !!}
+                    {!! Former::text('fee_rate')->append('<span>%</span>') !!}
 
-                    {!! Former::text('expense_rate') !!}
+                    {!! Former::text('expense_rate')->append('<span>%</span>') !!}
                 @else
                     {!! Former::text('name') !!}
 
@@ -156,7 +156,7 @@
             var $assocClientSelect = $('select#assoc_client_id');
             for (var i=0; i<clients.length; i++) {
                 var client = clients[i];
-								clientMap[client.public_id] = client;
+				clientMap[client.public_id] = client;
                 var clientName = getClientDisplayName(client);
                 if (!clientName) {
                     continue;

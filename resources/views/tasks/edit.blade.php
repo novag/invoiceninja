@@ -31,6 +31,10 @@
     @if ($task)
         {!! Former::populate($task) !!}
         {!! Former::populateField('id', $task->public_id) !!}
+
+        @if ($account->consulting_mode)
+            {!! Former::populateField('amount', floatval($task->amount) ? Utils::formatNumber($task->amount) : '') !!}
+        @endif
     @endif
 
     <div style="display:none">
@@ -80,7 +84,7 @@
             @include('partials/custom_fields', ['entityType' => ENTITY_TASK])
 
             @if ($account->consulting_mode)
-                {!! Former::text('amount') !!}
+                {!! Former::text('amount')->append('<span>EUR</span>') !!}
 
                 {!! Former::text('description') !!}
 

@@ -93,6 +93,10 @@ class ProjectRepository extends BaseRepository
 
         $project->fill($input);
 
+        if (isset($input['annual_target_salary'])) {
+            $project->annual_target_salary = Utils::parseFloat($input['annual_target_salary']);
+        }
+
         if (isset($input['due_date'])) {
             $project->due_date = Utils::toSqlDate($input['due_date']);
         }
